@@ -206,24 +206,24 @@ class GPT(nn.Module):
         for _ in range(self.max_seq_len - len(context)):
 
             # Run a forward pass through the model to get the logits
-            out = self.forward_model(current_tokens) # [1 L] -> [1 L V]
+            logits = self.forward_model(current_tokens) # [1 L] -> [1 L V]
 
             # Keep only the last token's logits and sample the next token
             # Hint: Use the sample_tokens function from utils/sampling.py
             # Make sure to pass the temperature, top_k and top_p arguments
-            next_logits = out[:, -1, :] # [1 V]
+            next_logits = logits[:, -1, :] # [1 V]
             next_token = sample_tokens(
                 next_logits,
                 temperature=temp,
                 top_k=top_k,
                 top_p=top_p
-            )
+            )[0].unsqueeze(0) # [1 1]
 
             # Concatenate the new token to the current_tokens sequence
             current_tokens = torch.cat([current_tokens, next_token], dim=-1)
 
             # Break if the end-of-sequence token is generated
-            if (next_token == eos_idx).item():
+            if next_token == eos_idx:
                 break
 
         if was_training:
