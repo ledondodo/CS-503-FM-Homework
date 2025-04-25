@@ -59,14 +59,14 @@ class MaskGIT(nn.Module):
         self.seq_read_key = seq_read_key
         self.init_std = init_std
 
-        self.input_embedding = ??? # TODO: Define the input embedding layer
-        self.positional_embedding = ??? # TODO: Define the learnable positional embedding
-        self.mask_token = ??? # TODO: Define the learnable mask token
+        self.input_embedding = nn.Embedding(vocab_size, dim) # TODO: Define the input embedding layer
+        self.positional_embedding = nn.Parameter(torch.randn(seq_len, dim)) # TODO: Define the learnable positional embedding
+        self.mask_token = nn.Parameter(torch.randn(dim)) # TODO: Define the learnable mask token
         
-        self.trunk = ??? # TODO: Define the transformer trunk
+        self.trunk = TransformerTrunk(dim, depth, head_dim, mlp_ratio, use_bias) # TODO: Define the transformer trunk
 
-        self.out_norm = ??? # TODO: Define the output layer normalization. Use the LayerNorm class defined in modeling/transformer_layers.py
-        self.to_logits = ??? # TODO: Define the output projection layer
+        self.out_norm = LayerNorm(dim) # TODO: Define the output layer normalization. Use the LayerNorm class defined in modeling/transformer_layers.py
+        self.to_logits = nn.Linear(dim, vocab_size, bias=False) # TODO: Define the output projection layer
 
         self.initialize_weights() # Weight initialization
 
