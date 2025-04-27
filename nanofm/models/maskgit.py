@@ -124,7 +124,7 @@ class MaskGIT(nn.Module):
 
         # TODO: Replace embeddings for masked tokens with the learned self.mask_token, wherever mask is True.
         # The mask token (D) is broadcast to all masked positions (B, L)
-        x = torch.where(mask.to(x.device).unsqueeze(-1), self.mask_token.view(1,1,-1), x)
+        x = torch.where(mask.unsqueeze(-1), self.mask_token.view(1,1,-1), x)
 
         # TODO: Add the positional embeddings to the tokens
         pos_emb = self.positional_embedding[:L,:].unsqueeze(0) # [seq_len D] -> [1 L D]
@@ -300,10 +300,10 @@ class MaskGIT(nn.Module):
             logits = self.forward_model(seq, mask)
             
             # TODO: Get the indices of masked tokens. Shape: [M,] (M = number of masked tokens)
-            masked_indices = mask.nonzero()[:,1]
+            masked_indices = mask.nonzero()[:,1] # where the mask is true
 
             # TODO: Get the logits for the `masked_indices` positions. Shape: [M, vocab_size]
-            masked_logits = logits[0,masked_indices]
+            masked_logits = logits[0,masked_indices] # logits where the mask is true
             
             # TODO: Compute confidence scores from `masked_logits`. Shape: [M,]
             # Hint: As a proxy for confidence, we use the maximum logit value for each masked position.
@@ -314,10 +314,10 @@ class MaskGIT(nn.Module):
             # Hint: First, get the top-k indices of the confidence scores, and then use these indices
             # to select the corresponding masked positions.
             topk_indices = confidence.topk(k).indices
-            topk_positions = masked_indices[topk_indices]
+            selected_positions = masked_indices[topk_indices]
             
             # TODO: Get the logits for the `selected_positions`. Shape: [k, vocab_size]
-            selected_logits = masked_logits[topk_positions, :]
+            selected_logits = logits[0,selected_positions]
             
             # TODO: Sample new tokens for the selected_positions
             # Hint: Use the sample_tokens function from utils/sampling.py
@@ -333,8 +333,8 @@ class MaskGIT(nn.Module):
             # Replace the selected positions in `seq` with the sampled tokens
             # and set the corresponding positions in `mask` to False (indicating that
             # these positions are no longer masked).
-            seq[0, topk_positions] = samples
-            mask[0, topk_positions] = False
+            seq[0, selected_positions] = samples
+            mask[0, selected_positions] = False
 
             if return_history:
                 seq_history.append(seq.clone().cpu())
