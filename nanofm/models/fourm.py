@@ -454,7 +454,7 @@ class FourM(nn.Module):
         
         for step, k in enumerate(schedule):
             # Select the k positions to predict for this step
-            dec_input_positions = dec_input_positions_list[step]
+            dec_input_positions = dec_input_positions_list[step].unsqueeze(0)
             # Create a tensor of k IDs specifying the target modality
             dec_input_modalities = target_mod_index * torch.ones(1, k, device=device, dtype=torch.long)
 
@@ -482,7 +482,7 @@ class FourM(nn.Module):
             # Specifically, concatenate the k samples to enc_input_tokens, the k dec_input_positions
             # to enc_input_positions, and the k dec_input_modalities to enc_input_modalities.
             # The resulting shapes for each tensor should be [1, N_prev + k].
-            enc_input_tokens = torch.cat([enc_input_tokens, samples], dim=1)
+            enc_input_tokens = torch.cat([enc_input_tokens, samples.unsqueeze(0)], dim=1)
             enc_input_positions = torch.cat([enc_input_positions, dec_input_positions], dim=1)
             enc_input_modalities = torch.cat([enc_input_modalities, dec_input_modalities], dim=1)
                    

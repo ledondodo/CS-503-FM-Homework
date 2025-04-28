@@ -250,6 +250,7 @@ class DecoderBlock(nn.Module):
         x = x + self.self_attn(self.norm1(x), mask=sa_mask)
         x = x + self.cross_attn(self.query_norm(x), self.context_norm(context), mask=xa_mask)
         x = x + self.mlp(self.norm2(x))
+        return x
 
 
 class TransformerTrunk(nn.Module):
